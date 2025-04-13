@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pomodoro-poetry"
+version = "0.1.0"
+description = ""
+authors = ["Markelov A <mrklv001@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.5"
+pydantic-settings = "^2.6.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
