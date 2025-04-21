@@ -10,5 +10,5 @@ class Task(BaseModel):
     @model_validator(mode="after")
     def check_name_or_pomodoro_count_is_not_none(self):
         if self.name is None and self.pomodoro_count is None:
-            raise ValueError("Нет имени и счетчика")
+            raise ValueError("name or pomodoro_count must ba provided")
         return self
