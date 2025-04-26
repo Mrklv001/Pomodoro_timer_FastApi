@@ -1,72 +1,54 @@
-from fastapi import APIRouter, status
-from database.database import get_db_session
-from schema.task import Task
+from typing import Annotated
 
-router = APIRouter(prefix="/task", tags=["ping"])
+from fastapi import APIRouter, status, Depends
+
+from dependecy import get_task_service, get_tasks_repository
+from schema.task import TaskSchema
+from repository import TaskRepository
+from service import TaskService
+
+router = APIRouter(prefix="/task", tags=["task"])
 
 
-# GET________________________
 @router.get(
     "/all",
-    response_model=list[Task]
+    response_model=list[TaskSchema]
 )
-async def get_tasks():
-    result: list[Task] = []
-    cursor = get_db_session().cursor()
-    tasks = cursor.execute("SELECT * FROM Tasks").fetchall()
-    for task in tasks:
-        result.append(Task(
-            id=task[0],
-            name=task[1],
-            pomodoro_count=task[2],
-            category_id=task[3]
-        ))
-
-    return result
+async def get_tasks(
+        task_service: Annotated[TaskService, Depends(get_task_service)]
+):
+    return task_service.get_tasks()
 
 
-# POST________________________
 @router.post(
     "/",
-    response_model=Task
+    response_model=TaskSchema
 )
-async def create_task(task: Task):
-    connection = get_db_session()
-    cursor = connection.cursor()
-    cursor.execute("INSERT INTO Tasks (name, pomodoro_count, category_id) VALUES (?, ?, ?)",
-                   (task.name, task.pomodoro_count, task.category_id))
-    connection.commit()
-    connection.close()
+async def create_task(
+        task: TaskSchema,
+        task_repository: Annotated[TaskRepository, Depends(get_tasks_repository)]
+):
+    task_id = task_repository.create_task(task)
+    task.id = task_id
     return task
 
 
-# PATCH________________________
 @router.patch(
     "/{task_id}",
-    response_model=Task
+    response_model=TaskSchema
 )
-async def patch_task(task_id: int, name: str):
-    connection = get_db_session()
-    cursor = connection.cursor()
-    cursor.execute("UPDATE Tasks SET name =? WHERE id=?", (name, task_id))
-    connection.commit()
-    task = cursor.execute("SELECT * FROM Tasks WHERE id=?", f"{task_id}").fetchall()[0]
-    connection.close()
-    return Task(
-        id=task[0],
-        name=task[1],
-        pomodoro_count=task[2],
-        category_id=task[3]
-    )
+async def patch_task(
+        task_id: int,
+        name: str,
+        task_repository: Annotated[TaskRepository, Depends(get_tasks_repository)],
+):
+    return task_repository.update_task_name(task_id, name)
 
 
-# DELETE________________________
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_task(task_id: int):
-    connection = get_db_session()
-    cursor = connection.cursor()
-    cursor.execute("DELETE FROM Tasks WHERE id=?", (task_id,))
-    connection.commit()
-    connection.close()
-
+async def delete_task(
+        task_id: int,
+        task_repository: Annotated[TaskRepository, Depends(get_tasks_repository)]
+):
+    task_repository.delete_task(task_id)
     return {"message": "task deleted successfully"}

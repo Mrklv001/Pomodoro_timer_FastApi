@@ -11,6 +11,7 @@ fastapi = "^0.115.5"
 pydantic-settings = "^2.6.1"
 sqlalchemy = "^2.0.40"
 alembic = "^1.15.2"
+psycopg2-binary = "^2.9.10"
 
 
 [build-system]

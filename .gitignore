@@ -1,5 +1,5 @@
-# created by virtualenv automatically
-.venv/
-.DS_Store
+.venv
 .idea
-__pycache__
+__pychache__/
+*.local*
+.DS_Store
